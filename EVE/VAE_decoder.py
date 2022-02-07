@@ -113,9 +113,7 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         """
         Samples a latent vector via reparametrization trick
         """
-        eps = torch.randn_like(mean).to(self.device)
-        z = torch.exp(0.5*log_var) * eps + mean
-        return z
+        return mean 
 
     def forward(self, z):
         batch_size = z.shape[0]

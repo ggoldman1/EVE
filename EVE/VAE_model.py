@@ -57,9 +57,7 @@ class VAE_model(nn.Module):
         """
         Samples a latent vector via reparametrization trick
         """
-        eps = torch.randn_like(mu).to(self.device)
-        z = torch.exp(0.5*log_var) * eps + mu
-        return z
+        return mu
 
     def KLD_diag_gaussians(self, mu, logvar, p_mu, p_logvar):
         """

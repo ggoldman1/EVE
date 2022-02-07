@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /wynton/group/ntranos/grant/EVE
+cd ~/EVE
 echo $PATH
 export PATH=~/miniconda3/bin:$PATH
 echo $PATH

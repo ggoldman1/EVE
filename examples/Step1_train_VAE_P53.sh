@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [[ -f ./Step1_timer.txt ]]; then 
-	rm ./Step1_timer.txt
-fi
-
-echo "START:" > Step1_timer.txt
-date >> Step1_timer.txt 
-
 cd ~/EVE
 export PATH=~/miniconda3/bin:$PATH
 source ~/miniconda3/bin/activate protein_env
@@ -42,5 +35,4 @@ dcgmi stats -g $gpuprof -x $JOB_ID
 dcgmi stats -g $gpuprof -v -j $JOB_ID
 dcgmi group -d $gpuprof
 
-echo "END:" >> Step1_timer.txt
-date >> Step1_timer.txt
+

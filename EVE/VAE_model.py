@@ -23,10 +23,13 @@ class VAE_model(nn.Module):
             data,
             encoder_parameters,
             decoder_parameters,
-            random_seed
+            random_seed,
+            inference=False
             ):
         
         super().__init__()
+
+        self.inference = inference
         
         self.model_name = model_name
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -48,9 +51,9 @@ class VAE_model(nn.Module):
         
         self.encoder = VAE_encoder.VAE_MLP_encoder(params=encoder_parameters)
         if decoder_parameters['bayesian_decoder']:
-            self.decoder = VAE_decoder.VAE_Bayesian_MLP_decoder(params=decoder_parameters)
+            self.decoder = VAE_decoder.VAE_Bayesian_MLP_decoder(params=decoder_parameters, inference=self.inference)
         else:
-            self.decoder = VAE_decoder.VAE_Standard_MLP_decoder(params=decoder_parameters)
+            self.decoder = VAE_decoder.VAE_Standard_MLP_decoder(params=decoder_parameters, inference=self.inference)
         self.logit_sparsity_p = decoder_parameters['logit_sparsity_p']
         
     def sample_latent(self, mu, log_var):
@@ -150,7 +153,10 @@ class VAE_model(nn.Module):
         Returns tensors of ELBO, reconstruction loss and KL divergence for each point in batch x.
         """
         mu, log_var = self.encoder(x)
-        z = self.sample_latent(mu, log_var)
+        if self.inference:
+            z = mu
+        else:
+            z = self.sample_latent(mu, log_var)
         recon_x_log = self.decoder(z)
 
         recon_x_log = recon_x_log.view(-1,self.alphabet_size*self.seq_len)
@@ -328,6 +334,7 @@ class VAE_model(nn.Module):
         with torch.no_grad():
             for i, batch in enumerate(tqdm.tqdm(dataloader, 'Looping through mutation batches')):
                 x = batch.type(self.dtype).to(self.device)
+                # we don't need this if not sampling, can just run once for each sequence
                 for j in tqdm.tqdm(range(num_samples), 'Looping through number of samples for batch #: '+str(i+1)):
                     seq_predictions, _, _ = self.all_likelihood_components(x)
                     prediction_matrix[i*batch_size:i*batch_size+len(x),j] = seq_predictions

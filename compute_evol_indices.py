@@ -65,7 +65,8 @@ if __name__=='__main__':
                     data=data,
                     encoder_parameters=model_params["encoder_parameters"],
                     decoder_parameters=model_params["decoder_parameters"],
-                    random_seed=42
+                    random_seed=42,
+                    inference=True
     )
     model = model.to(model.device)
 

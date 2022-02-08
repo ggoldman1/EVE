@@ -6,7 +6,7 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
     """
     Bayesian MLP decoder class for the VAE model.
     """
-    def __init__(self, params):
+    def __init__(self, params, inference):
         """
         Required input parameters:
         - seq_len: (Int) Sequence length of sequence alignment
@@ -22,6 +22,7 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         - include_sparsity: (Bool) Whether we use the sparsity inducing scheme on the output from the last hidden layer
         - num_tiles_sparsity: (Int) Number of tiles to use in the sparsity inducing scheme (the more the tiles, the stronger the sparsity)
         - bayesian_decoder: (Bool) Whether the decoder is bayesian or not
+        - inference: (Bool) True if performing inference, false if training
         """
         super().__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,6 +37,8 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         self.include_temperature_scaler = params['include_temperature_scaler']
         self.include_sparsity = params['include_sparsity']
         self.num_tiles_sparsity = params['num_tiles_sparsity']
+
+        self.inference = inference
 
         self.mu_bias_init = 0.1
         self.logvar_init = -10.0
@@ -113,7 +116,9 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         """
         Samples a latent vector via reparametrization trick
         """
-        return mean 
+        eps = torch.randn_like(mean).to(self.device)
+        z = torch.exp(0.5*log_var) * eps + mean
+        return z
 
     def forward(self, z):
         batch_size = z.shape[0]
@@ -122,16 +127,29 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         else:
             x = z
 
+        mean_reps_decoder = [[] for x in range(len(self.hidden_layers_sizes))]
+
         for layer_index in range(len(self.hidden_layers_sizes)-1):
-            layer_i_weight = self.sampler(self.hidden_layers_mean[str(layer_index)].weight, self.hidden_layers_log_var[str(layer_index)].weight)
-            layer_i_bias = self.sampler(self.hidden_layers_mean[str(layer_index)].bias, self.hidden_layers_log_var[str(layer_index)].bias)
+            if self.inference: # no sampling on inference
+                layer_i_weight = self.hidden_layers_mean[str(layer_index)].weight
+                mean_reps_decoder[layer_index] = layer_i_weight
+                layer_i_bias = self.hidden_layers_mean[str(layer_index)].bias
+            else:
+                layer_i_weight = self.sampler(self.hidden_layers_mean[str(layer_index)].weight, self.hidden_layers_log_var[str(layer_index)].weight)
+                layer_i_bias = self.sampler(self.hidden_layers_mean[str(layer_index)].bias, self.hidden_layers_log_var[str(layer_index)].bias)
             x = self.first_hidden_nonlinearity(F.linear(x, weight=layer_i_weight, bias=layer_i_bias))
             if self.dropout_proba > 0.0:
                 x = self.dropout_layer(x)
 
         last_index = len(self.hidden_layers_sizes)-1
-        last_layer_weight = self.sampler(self.hidden_layers_mean[str(last_index)].weight, self.hidden_layers_log_var[str(last_index)].weight)
-        last_layer_bias = self.sampler(self.hidden_layers_mean[str(last_index)].bias, self.hidden_layers_log_var[str(last_index)].bias)
+        if self.inference: # no sampling on inference
+            last_layer_weight = self.hidden_layers_mean[str(last_index)].weight
+            mean_reps_decoder[last_index] = last_layer_weight
+            last_layer_bias = self.hidden_layers_mean[str(last_index)].bias
+        else:
+            last_layer_weight = self.sampler(self.hidden_layers_mean[str(last_index)].weight, self.hidden_layers_log_var[str(last_index)].weight)
+            last_layer_bias = self.sampler(self.hidden_layers_mean[str(last_index)].bias, self.hidden_layers_log_var[str(last_index)].bias)
+
         x = self.last_hidden_nonlinearity(F.linear(x, weight=last_layer_weight, bias=last_layer_bias))
         if self.dropout_proba > 0.0:
             x = self.dropout_layer(x)
@@ -162,7 +180,10 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         x = x.view(batch_size, self.seq_len, self.alphabet_size)
         x_recon_log = F.log_softmax(x, dim=-1) #of shape (batch_size, seq_len, alphabet)
 
-        return x_recon_log
+        if not self.inference:
+            return x_recon_log
+        else:
+            return x_recon_log, mean_reps_decoder
 
 class VAE_Standard_MLP_decoder(nn.Module):
     """

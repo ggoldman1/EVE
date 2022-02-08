@@ -401,3 +401,33 @@ Alignment sequence length:	329
 |Train : Update 398000. Negative ELBO : 230.560, BCE: 228.223, KLD_latent: 0.295, KLD_decoder_params_norm: 2.042, Time: 14018.88 |
 |Train : Update 399000. Negative ELBO : 230.680, BCE: 228.338, KLD_latent: 0.295, KLD_decoder_params_norm: 2.047, Time: 14049.45 |
 |Train : Update 400000. Negative ELBO : 230.607, BCE: 228.260, KLD_latent: 0.301, KLD_decoder_params_norm: 2.046, Time: 14080.11 |
+Number of sequences in alignment file:	3630
+Neff:	443.49035766802706
+Alignment sequence length:	329
+|Train : Update 1000. Negative ELBO : 287960.844, BCE: 513.705, KLD_latent: 5.393, KLD_decoder_params_norm: 287441.719, Time: 38.57 |
+|Train : Update 2000. Negative ELBO : 284573.938, BCE: 352.276, KLD_latent: 7.107, KLD_decoder_params_norm: 284214.562, Time: 76.51 |
+|Train : Update 3000. Negative ELBO : 281282.781, BCE: 289.766, KLD_latent: 6.016, KLD_decoder_params_norm: 280986.969, Time: 118.34 |
+|Train : Update 4000. Negative ELBO : 278026.219, BCE: 262.937, KLD_latent: 4.962, KLD_decoder_params_norm: 277758.312, Time: 160.39 |
+|Train : Update 5000. Negative ELBO : 274788.188, BCE: 255.811, KLD_latent: 3.709, KLD_decoder_params_norm: 274528.656, Time: 202.19 |
+|Train : Update 6000. Negative ELBO : 271551.688, BCE: 250.164, KLD_latent: 3.157, KLD_decoder_params_norm: 271298.375, Time: 243.96 |
+|Train : Update 7000. Negative ELBO : 268314.938, BCE: 244.804, KLD_latent: 2.471, KLD_decoder_params_norm: 268067.656, Time: 285.66 |
+|Train : Update 8000. Negative ELBO : 265077.125, BCE: 238.288, KLD_latent: 2.241, KLD_decoder_params_norm: 264836.594, Time: 327.45 |
+|Train : Update 9000. Negative ELBO : 261846.172, BCE: 238.873, KLD_latent: 1.994, KLD_decoder_params_norm: 261605.297, Time: 369.13 |
+|Train : Update 10000. Negative ELBO : 258612.109, BCE: 236.491, KLD_latent: 1.804, KLD_decoder_params_norm: 258373.828, Time: 410.89 |
+Number of sequences in alignment file:	3630
+Neff:	443.49035766802706
+Alignment sequence length:	329
+Number of sequences in alignment file:	3630
+Neff:	443.49035766802706
+Alignment sequence length:	329
+Number of sequences in alignment file:	3630
+Neff:	443.49035766802706
+Alignment sequence length:	329
+|Train : Update 1000. Negative ELBO : 287960.844, BCE: 513.705, KLD_latent: 5.393, KLD_decoder_params_norm: 287441.719, Time: 37.35 |
+|Train : Update 2000. Negative ELBO : 284573.938, BCE: 352.276, KLD_latent: 7.107, KLD_decoder_params_norm: 284214.562, Time: 72.87 |
+|Train : Update 3000. Negative ELBO : 281282.781, BCE: 289.766, KLD_latent: 6.016, KLD_decoder_params_norm: 280986.969, Time: 108.37 |
+|Train : Update 4000. Negative ELBO : 278026.219, BCE: 262.937, KLD_latent: 4.962, KLD_decoder_params_norm: 277758.312, Time: 144.05 |
+|Train : Update 5000. Negative ELBO : 274788.188, BCE: 255.811, KLD_latent: 3.709, KLD_decoder_params_norm: 274528.656, Time: 179.87 |
+Number of sequences in alignment file:	3630
+Neff:	443.49035766802706
+Alignment sequence length:	329

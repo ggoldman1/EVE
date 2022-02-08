@@ -30,6 +30,7 @@ class VAE_model(nn.Module):
         super().__init__()
 
         self.inference = inference
+        print(f"INFERENCE IS {inference}")
         
         self.model_name = model_name
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -60,7 +61,9 @@ class VAE_model(nn.Module):
         """
         Samples a latent vector via reparametrization trick
         """
-        return mu
+        eps = torch.randn_like(mu).to(self.device)
+        z = torch.exp(0.5*log_var) * eps + mu
+        return z
 
     def KLD_diag_gaussians(self, mu, logvar, p_mu, p_logvar):
         """

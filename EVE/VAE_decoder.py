@@ -127,12 +127,11 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         else:
             x = z
 
-        mean_reps_decoder = [[] for x in range(len(self.hidden_layers_sizes))]
+        decoder_reps = []
 
         for layer_index in range(len(self.hidden_layers_sizes)-1):
             if self.inference: # no sampling on inference
                 layer_i_weight = self.hidden_layers_mean[str(layer_index)].weight
-                mean_reps_decoder[layer_index] = layer_i_weight
                 layer_i_bias = self.hidden_layers_mean[str(layer_index)].bias
             else:
                 layer_i_weight = self.sampler(self.hidden_layers_mean[str(layer_index)].weight, self.hidden_layers_log_var[str(layer_index)].weight)
@@ -140,11 +139,11 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
             x = self.first_hidden_nonlinearity(F.linear(x, weight=layer_i_weight, bias=layer_i_bias))
             if self.dropout_proba > 0.0:
                 x = self.dropout_layer(x)
+            decoder_reps.append(x)
 
         last_index = len(self.hidden_layers_sizes)-1
         if self.inference: # no sampling on inference
             last_layer_weight = self.hidden_layers_mean[str(last_index)].weight
-            mean_reps_decoder[last_index] = last_layer_weight
             last_layer_bias = self.hidden_layers_mean[str(last_index)].bias
         else:
             last_layer_weight = self.sampler(self.hidden_layers_mean[str(last_index)].weight, self.hidden_layers_log_var[str(last_index)].weight)
@@ -153,7 +152,9 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         x = self.last_hidden_nonlinearity(F.linear(x, weight=last_layer_weight, bias=last_layer_bias))
         if self.dropout_proba > 0.0:
             x = self.dropout_layer(x)
+        decoder_reps.append(x)
 
+        # should this not sample if inference?
         W_out = self.sampler(self.last_hidden_layer_weight_mean, self.last_hidden_layer_weight_log_var)
         b_out = self.sampler(self.last_hidden_layer_bias_mean, self.last_hidden_layer_bias_log_var)
 
@@ -183,7 +184,7 @@ class VAE_Bayesian_MLP_decoder(nn.Module):
         if not self.inference:
             return x_recon_log
         else:
-            return x_recon_log, mean_reps_decoder
+            return x_recon_log, decoder_reps 
 
 class VAE_Standard_MLP_decoder(nn.Module):
     """

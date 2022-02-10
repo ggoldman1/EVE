@@ -158,9 +158,10 @@ class VAE_model(nn.Module):
         mu, log_var = self.encoder(x)
         if self.inference:
             z = mu
+            recon_x_log, decoder_reps = self.decoder(z)
         else:
             z = self.sample_latent(mu, log_var)
-        recon_x_log = self.decoder(z)
+            recon_x_log = self.decoder(z)
 
         recon_x_log = recon_x_log.view(-1,self.alphabet_size*self.seq_len)
         x = x.view(-1,self.alphabet_size*self.seq_len)
@@ -169,6 +170,9 @@ class VAE_model(nn.Module):
         KLD_batch_tensor = (-0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp(),dim=1))
         
         ELBO_batch_tensor = -(BCE_batch_tensor + KLD_batch_tensor)
+        
+        if self.inference:
+            return ELBO_batch_tensor, BCE_batch_tensor, KLD_batch_tensor, mu, decoder_reps
 
         return ELBO_batch_tensor, BCE_batch_tensor, KLD_batch_tensor
 
@@ -333,13 +337,16 @@ class VAE_model(nn.Module):
         mutated_sequences_one_hot = torch.tensor(mutated_sequences_one_hot)
         dataloader = torch.utils.data.DataLoader(mutated_sequences_one_hot, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
         prediction_matrix = torch.zeros((len(list_valid_mutations),num_samples))
+        representations = []
 
         with torch.no_grad():
             for i, batch in enumerate(tqdm.tqdm(dataloader, 'Looping through mutation batches')):
                 x = batch.type(self.dtype).to(self.device)
                 # we don't need this if not sampling, can just run once for each sequence
+                seq_predictions, _, _, mu, decoder_reps = self.all_likelihood_components(x)
+                representations.append(mu)
+                representations.append(decoder_reps)
                 for j in tqdm.tqdm(range(num_samples), 'Looping through number of samples for batch #: '+str(i+1)):
-                    seq_predictions, _, _ = self.all_likelihood_components(x)
                     prediction_matrix[i*batch_size:i*batch_size+len(x),j] = seq_predictions
                 tqdm.tqdm.write('\n')
             mean_predictions = prediction_matrix.mean(dim=1, keepdim=False)
@@ -347,4 +354,4 @@ class VAE_model(nn.Module):
             delta_elbos = mean_predictions - mean_predictions[0]
             evol_indices =  - delta_elbos.detach().cpu().numpy()
 
-        return list_valid_mutations, evol_indices, mean_predictions[0].detach().cpu().numpy(), std_predictions.detach().cpu().numpy()
+        return list_valid_mutations, evol_indices, mean_predictions[0].detach().cpu().numpy(), std_predictions.detach().cpu().numpy(), representations

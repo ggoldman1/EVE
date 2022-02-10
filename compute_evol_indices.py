@@ -79,10 +79,10 @@ if __name__=='__main__':
         print("Unable to locate VAE model checkpoint")
         sys.exit(0)
     
-    list_valid_mutations, evol_indices, _, _ = model.compute_evol_indices(msa_data=data,
-                                                    list_mutations_location=args.mutations_location, 
-                                                    num_samples=args.num_samples_compute_evol_indices,
-                                                    batch_size=args.batch_size)
+    list_valid_mutations, evol_indices, _, _, representations = model.compute_evol_indices(msa_data=data,
+                                                                        list_mutations_location=args.mutations_location, 
+                                                                        num_samples=args.num_samples_compute_evol_indices,
+                                                                        batch_size=args.batch_size)
 
     df = {}
     df['protein_name'] = protein_name
@@ -96,3 +96,9 @@ if __name__=='__main__':
     except:
         keep_header=True 
     df.to_csv(path_or_buf=evol_indices_output_filename, index=False, mode='a', header=keep_header)
+
+
+    rep50 = pd.DataFrame([batch.tolist() for sublist in [representations[x*2] for x in range(4)] for batch in sublist])        
+    rep300 = pd.DataFrame([batch.tolist() for sublist in [representations[(x*2)+1][0] for x in range(4)] for batch in sublist])
+    rep1000 = pd.DataFrame([batch.tolist() for sublist in [representations[(x*2)+1][1] for x in range(4)] for batch in sublist])
+    rep2000 = pd.DataFrame([batch.tolist() for sublist in [representations[(x*2)+1][2] for x in range(4)] for batch in sublist])
